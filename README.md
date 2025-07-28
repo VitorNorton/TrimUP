@@ -19,9 +19,13 @@ TrimUp é uma aplicação web de gerenciamento de agendamentos de serviços para
 # 🚀 Funcionalidades
 
 ✅ Login do usuário via Google.
+
 ✅ Agendamento de datas e horários 
+
 ✅ Seleção de serviços
+
 ✅ Visualização de agendamento e serviços 
+
 
 ### <img align="center" src="https://files.softicons.com/download/social-media-icons/simple-icons-by-dan-leech/png/256x256/behance.png" height=40 > Behance
 
