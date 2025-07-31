@@ -8,12 +8,16 @@ import Link from "next/link"
 import Image from "next/image"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { signOut, useSession } from "next-auth/react"
-import { Avatar, AvatarImage } from "./ui/avatar"
+// Adicione AvatarFallback aqui
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar" 
 import SignInDialog from "./sign-in-dialog"
 
 const SidebarSheet = () => {
   const { data } = useSession()
   const handleLogoutClick = () => signOut()
+
+  // Adicione uma variável para as iniciais do usuário
+  const userInitials = data?.user?.name ? data.user.name.split(" ").map((n) => n[0]).join("") : "";
 
   return (
     <SheetContent className="overflow-y-auto">
@@ -25,15 +29,18 @@ const SidebarSheet = () => {
         {data?.user ? (
           <div className="flex items-center gap-2">
             <Avatar>
-              <AvatarImage src={data?.user?.image ?? ""} />
-            </Avatar>
-
-            <div>
-              <p className="font-bold">{data.user.name}</p>
-              <p className="text-xs">{data.user.email}</p>
+               <AvatarImage 
+               src={data?.user?.image ?? ""} 
+               alt={data.user.name ?? ""}
+               />
+               <AvatarFallback>{userInitials}</AvatarFallback>
+               </Avatar>
+          <div>
+            <p className="font-bold">{data.user.name}</p>
+            <p className="text-xs">{data.user.email}</p>
             </div>
-          </div>
-        ) : (
+            </div>
+            ) : (
           <>
             <h2 className="font-bold">Olá, faça seu login!</h2>
             <Dialog>
