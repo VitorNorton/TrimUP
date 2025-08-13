@@ -32,4 +32,4 @@ TrimUp é uma aplicação web de gerenciamento de agendamentos de serviços para
 
 Você pode visualizar a apresentação do projeto
 
-👉 [Acessar projeto no Behance](https://www.behance.net/vitor-norton)
+👉 [Acessar projeto no Behance](https://www.behance.net/gallery/231174435/TrimUp)
