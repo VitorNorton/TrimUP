@@ -34,6 +34,7 @@ const Home = async () => {
               src="/banner-02.png"
               alt=""
               fill
+              sizes="100vw"
               className="object-cover brightness-[0.3]"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
@@ -132,6 +133,7 @@ const Home = async () => {
                     width={16}
                     height={16}
                     alt={option.title}
+                    style={{ width: 16, height: 16 }}
                   />
                   {option.title}
                 </Link>
@@ -144,6 +146,7 @@ const Home = async () => {
               alt="Dê um UP no seu corte"
               src="/banner-01.png"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="rounded-xl object-cover"
             />
           </div>

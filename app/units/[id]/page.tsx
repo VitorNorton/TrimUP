@@ -25,7 +25,16 @@ const UnitPage = async ({ params }: UnitPageProps) => {
 
   if (!unit) return notFound()
 
-  const services = await db.service.findMany({})
+  const [services, professionals] = await Promise.all([
+    db.service.findMany({}),
+    db.professional.findMany({
+      where: {
+        OR: [{ units: { some: { unitId: params.id } } }, { unitId: params.id }],
+      },
+      include: { services: { select: { serviceId: true } } },
+      orderBy: { name: "asc" },
+    }),
+  ])
 
   return (
     <div>
@@ -35,6 +44,7 @@ const UnitPage = async ({ params }: UnitPageProps) => {
           alt={unit.name}
           src={unit.imageUrl}
           fill
+          sizes="100vw"
           className="object-cover"
         />
         <Button
@@ -97,6 +107,7 @@ const UnitPage = async ({ params }: UnitPageProps) => {
                 key={service.id}
                 unit={JSON.parse(JSON.stringify(unit))}
                 service={JSON.parse(JSON.stringify(service))}
+                professionals={JSON.parse(JSON.stringify(professionals))}
               />
             ))}
           </div>
@@ -119,6 +130,7 @@ const UnitPage = async ({ params }: UnitPageProps) => {
                 alt={unit.name}
                 src={unit.imageUrl}
                 fill
+                sizes="(max-width: 1024px) 60vw, 800px"
                 className="rounded-2xl object-cover"
               />
             </div>
@@ -151,6 +163,7 @@ const UnitPage = async ({ params }: UnitPageProps) => {
                     key={service.id}
                     unit={JSON.parse(JSON.stringify(unit))}
                     service={JSON.parse(JSON.stringify(service))}
+                    professionals={JSON.parse(JSON.stringify(professionals))}
                   />
                 ))}
               </div>
@@ -161,7 +174,13 @@ const UnitPage = async ({ params }: UnitPageProps) => {
           <Card className="overflow-hidden">
             {/* Mapa */}
             <div className="relative h-[180px] w-full">
-              <Image alt="Mapa" src="/map.png" fill className="object-cover" />
+              <Image
+                alt="Mapa"
+                src="/map.png"
+                fill
+                sizes="360px"
+                className="object-cover"
+              />
               <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 backdrop-blur-sm">
                 <Avatar>
                   <AvatarImage src={unit.imageUrl} />

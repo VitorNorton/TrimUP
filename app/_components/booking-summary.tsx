@@ -7,12 +7,14 @@ interface BookingSummaryProps {
   service: Pick<Service, "name" | "price">
   unit: Pick<Unit, "name">
   selectedDate: Date
+  professional?: { name: string } | null
 }
 
 const BookingSummary = ({
   service,
   unit,
   selectedDate,
+  professional,
 }: BookingSummaryProps) => {
   return (
     <Card>
@@ -42,6 +44,13 @@ const BookingSummary = ({
         <div className="flex items-center justify-between">
           <h2 className="text-sm text-gray-400">Unidade</h2>
           <p className="text-sm">{unit.name}</p>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm text-gray-400">Profissional</h2>
+          <p className="text-sm">
+            {professional ? professional.name : "Sem preferência"}
+          </p>
         </div>
       </CardContent>
     </Card>

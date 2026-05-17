@@ -17,7 +17,13 @@ const Header = ({ showSearch = true }: HeaderProps) => {
     <Card>
       <CardContent className="flex flex-row items-center gap-4 px-5 py-5 md:px-16 lg:px-32">
         <Link href="/">
-          <Image alt="Trim Up" src="/logo.png" height={18} width={120} />
+          <Image
+            alt="Trim Up"
+            src="/logo.png"
+            height={18}
+            width={120}
+            style={{ height: "auto" }}
+          />
         </Link>
 
         {/* Search bar — desktop only, hidden on home page */}
@@ -27,7 +33,9 @@ const Header = ({ showSearch = true }: HeaderProps) => {
           </div>
         )}
 
-        <HeaderDesktopNav />
+        <div className="ml-auto hidden md:block">
+          <HeaderDesktopNav />
+        </div>
 
         <div className="ml-auto md:hidden">
           <Sheet>

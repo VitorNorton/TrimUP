@@ -60,7 +60,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-      <SheetTrigger className="w-[290px] shrink-0">
+      <SheetTrigger className="w-full text-left">
         <Card className="w-full">
           <CardContent className="flex justify-between p-0">
             <div className="flex flex-col gap-2 py-5 pl-5">
@@ -103,6 +103,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             alt={`Mapa da unidade ${unit.name}`}
             src="/map.png"
             fill
+            sizes="85vw"
             className="rounded-xl object-cover"
           />
           <Card className="z-50 mx-5 mb-3 w-full rounded-xl">

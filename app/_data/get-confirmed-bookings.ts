@@ -1,21 +1,14 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authOptions } from "../_lib/auth"
 import { db } from "../_lib/prisma"
+import { getSessionUserId } from "../_lib/get-session-user-id"
 
 export const getConfirmedBookings = async () => {
-  const session = await getServerSession(authOptions)
-  if (!session?.user) return []
+  const userId = await getSessionUserId()
+  if (!userId) return []
   return db.booking.findMany({
-    where: {
-      userId: (session.user as any).id,
-      date: { gte: new Date() },
-    },
-    include: {
-      service: true,
-      unit: true,
-    },
+    where: { userId, date: { gte: new Date() } },
+    include: { service: true, unit: true, professional: true },
     orderBy: { date: "asc" },
   })
 }

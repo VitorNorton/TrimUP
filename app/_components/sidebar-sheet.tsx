@@ -54,7 +54,7 @@ const SidebarSheet = () => {
                   <LogInIcon />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[90%]">
+              <DialogContent className="w-[90%]" aria-describedby={undefined}>
                 <SignInDialog />
               </DialogContent>
             </Dialog>
@@ -93,6 +93,7 @@ const SidebarSheet = () => {
                   src={option.imageUrl}
                   height={18}
                   width={18}
+                  style={{ width: 18, height: 18 }}
                 />
                 {option.title}
               </Link>

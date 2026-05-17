@@ -7,42 +7,86 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  BARBEIRO
+  RECEPCIONISTA
+  CLIENTE
+}
+
+enum ExpenseCategory {
+  ALUGUEL
+  UTILIDADES
+  PRODUTOS
+  PESSOAL
+  MARKETING
+  OUTROS
+}
+
+enum CommissionType {
+  PERCENTAGE
+  FIXED
+  PER_SERVICE
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String               @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String               @unique
   emailVerified DateTime?
   image         String?
+  role          UserRole             @default(CLIENTE)
+  phone         String?
+  password      String?
   accounts      Account[]
   sessions      Session[]
   bookings      Booking[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  subscriptions ClientSubscription[]
+  professional  Professional?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 }
 
 model Unit {
-  id          String    @id @default(uuid())
-  name        String
-  address     String
-  phones      String[]
-  description String
-  imageUrl    String
-  lat         Float?
-  lng         Float?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  bookings    Booking[]
+  id            String         @id @default(uuid())
+  name          String
+  address       String
+  phones        String[]
+  description   String
+  imageUrl      String
+  lat           Float?
+  lng           Float?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bookings          Booking[]
+  professionals     Professional[]
+  professionalUnits ProfessionalUnit[]
+  services          UnitService[]
+  expenses          Expense[]
 }
 
 model Service {
-  id          String    @id @default(uuid())
-  name        String
-  description String
-  imageUrl    String
-  price       Decimal   @db.Decimal(10, 2)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  bookings    Booking[]
+  id                String                   @id @default(uuid())
+  name              String
+  description       String
+  imageUrl          String
+  price             Decimal                  @db.Decimal(10, 2)
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  bookings          Booking[]
+  professionals     ProfessionalService[]
+  subscriptionPlans SubscriptionPlanService[]
+  units             UnitService[]
+}
+
+// Quais serviços cada unidade oferece
+model UnitService {
+  unitId    String
+  serviceId String
+  unit      Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([unitId, serviceId])
 }
 
 model Account {
@@ -84,15 +128,119 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+model Professional {
+  id              String                @id @default(uuid())
+  name            String
+  imageUrl        String
+  phone           String?
+  commissionType  CommissionType        @default(PERCENTAGE)
+  commissionRate  Float                 @default(0.5)
+  commissionFixed Decimal?              @db.Decimal(10, 2)
+  // unitId kept for backward compatibility (primary unit)
+  unitId          String
+  unit            Unit                  @relation(fields: [unitId], references: [id])
+  userId          String?               @unique
+  user            User?                 @relation(fields: [userId], references: [id])
+  units           ProfessionalUnit[]
+  bookings        Booking[]
+  services        ProfessionalService[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+// Schedule per unit: which days + hours the professional attends each unit
+// schedule JSON format: { "SEG": { "start": "09:00", "end": "18:00" }, ... }
+model ProfessionalUnit {
+  id             String       @id @default(uuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  unitId         String
+  unit           Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  schedule       Json         @default("{}")
+
+  @@unique([professionalId, unitId])
+}
+
+model ProfessionalService {
+  id              String       @id @default(uuid())
+  professionalId  String
+  professional    Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceId       String
+  service         Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  commissionRate  Float?
+  commissionFixed Decimal?     @db.Decimal(10, 2)
+
+  @@unique([professionalId, serviceId])
+}
+
 model Booking {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  serviceId String
-  service   Service  @relation(fields: [serviceId], references: [id])
-  unitId    String
-  unit      Unit     @relation(fields: [unitId], references: [id])
-  date      DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  serviceId      String
+  service        Service       @relation(fields: [serviceId], references: [id])
+  unitId         String
+  unit           Unit          @relation(fields: [unitId], references: [id])
+  date           DateTime
+  professionalId String?
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// ── Planos de assinatura da barbearia para clientes ──────────────────────────
+
+model SubscriptionPlan {
+  id            String                   @id @default(cuid())
+  name          String
+  description   String?
+  imageUrl      String?
+  price         Decimal                  @db.Decimal(10, 2)
+  intervalDays  Int                      @default(30)
+  isActive      Boolean                  @default(true)
+  mpPlanId      String?                  // Mercado Pago plan ID
+  services      SubscriptionPlanService[]
+  subscribers   ClientSubscription[]
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+}
+
+model SubscriptionPlanService {
+  id            String           @id @default(cuid())
+  planId        String
+  plan          SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service          @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  usesPerPeriod Int?
+
+  @@unique([planId, serviceId])
+}
+
+model ClientSubscription {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id])
+  planId        String
+  plan          SubscriptionPlan @relation(fields: [planId], references: [id])
+  status        String           @default("active") // active | cancelled | expired | pending_payment
+  mpPaymentId   String?          // Mercado Pago payment ID
+  startedAt     DateTime         @default(now())
+  expiresAt     DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+// ── Despesas operacionais por unidade ────────────────────────────────────────
+
+model Expense {
+  id          String          @id @default(cuid())
+  description String
+  amount      Decimal         @db.Decimal(10, 2)
+  category    ExpenseCategory @default(OUTROS)
+  date        DateTime
+  unitId      String?
+  unit        Unit?           @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  recurring   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }

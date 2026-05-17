@@ -18,6 +18,7 @@ const UnitItem = ({ unit }: UnitItemProps) => {
           <Image
             alt={unit.name}
             fill
+            sizes="(max-width: 768px) 167px, 200px"
             className="rounded-2xl object-cover"
             src={unit.imageUrl}
           />
