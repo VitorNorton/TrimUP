@@ -1,17 +1,17 @@
 import { format } from "date-fns"
 import { Card, CardContent } from "./ui/card"
-import { Barbershop, BarbershopService } from "@prisma/client"
+import { Service, Unit } from "@prisma/client"
 import { ptBR } from "date-fns/locale"
 
 interface BookingSummaryProps {
-  service: Pick<BarbershopService, "name" | "price">
-  barbershop: Pick<Barbershop, "name">
+  service: Pick<Service, "name" | "price">
+  unit: Pick<Unit, "name">
   selectedDate: Date
 }
 
 const BookingSummary = ({
   service,
-  barbershop,
+  unit,
   selectedDate,
 }: BookingSummaryProps) => {
   return (
@@ -30,9 +30,7 @@ const BookingSummary = ({
         <div className="flex items-center justify-between">
           <h2 className="text-sm text-gray-400">Data</h2>
           <p className="text-sm">
-            {format(selectedDate, "d 'de' MMMM", {
-              locale: ptBR,
-            })}
+            {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
 
@@ -42,8 +40,8 @@ const BookingSummary = ({
         </div>
 
         <div className="flex items-center justify-between">
-          <h2 className="text-sm text-gray-400">Barbearia</h2>
-          <p className="text-sm">{barbershop.name}</p>
+          <h2 className="text-sm text-gray-400">Unidade</h2>
+          <p className="text-sm">{unit.name}</p>
         </div>
       </CardContent>
     </Card>

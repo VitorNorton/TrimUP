@@ -1,28 +1,26 @@
-import { Barbershop } from "@prisma/client"
+import { Unit } from "@prisma/client"
 import { Card, CardContent } from "./ui/card"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
-import { StarIcon } from "lucide-react"
+import { MapPinIcon, StarIcon } from "lucide-react"
 import Link from "next/link"
 
-interface BarbershopItemProps {
-  barbershop: Barbershop
+interface UnitItemProps {
+  unit: Unit
 }
 
-const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
+const UnitItem = ({ unit }: UnitItemProps) => {
   return (
-    <Card className="min-w-[167px] rounded-2xl md:min-w-[200px]">
+    <Card className="w-[167px] shrink-0 rounded-2xl md:w-[200px]">
       <CardContent className="p-0 px-1 pt-1">
-        {/* IMAGEM */}
         <div className="relative h-[159px] w-full md:h-[180px]">
           <Image
-            alt={barbershop.name}
+            alt={unit.name}
             fill
             className="rounded-2xl object-cover"
-            src={barbershop.imageUrl}
+            src={unit.imageUrl}
           />
-
           <Badge
             className="absolute left-2 top-2 space-x-1"
             variant="secondary"
@@ -32,12 +30,14 @@ const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
           </Badge>
         </div>
 
-        {/* TEXTO */}
         <div className="px-1 py-3">
-          <h3 className="truncate font-semibold">{barbershop.name}</h3>
-          <p className="truncate text-sm text-gray-400">{barbershop.address}</p>
+          <h3 className="truncate font-semibold">{unit.name}</h3>
+          <div className="flex items-center gap-1">
+            <MapPinIcon size={12} className="shrink-0 text-primary" />
+            <p className="truncate text-sm text-gray-400">{unit.address}</p>
+          </div>
           <Button variant="secondary" className="mt-3 w-full" asChild>
-            <Link href={`/barbershops/${barbershop.id}`}>Reservar</Link>
+            <Link href={`/units/${unit.id}`}>Ver unidade</Link>
           </Button>
         </div>
       </CardContent>
@@ -45,4 +45,4 @@ const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
   )
 }
 
-export default BarbershopItem
+export default UnitItem

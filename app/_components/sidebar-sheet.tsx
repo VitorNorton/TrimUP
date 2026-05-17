@@ -9,7 +9,7 @@ import Image from "next/image"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { signOut, useSession } from "next-auth/react"
 // Adicione AvatarFallback aqui
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar" 
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import SignInDialog from "./sign-in-dialog"
 
 const SidebarSheet = () => {
@@ -17,7 +17,12 @@ const SidebarSheet = () => {
   const handleLogoutClick = () => signOut()
 
   // Adicione uma variável para as iniciais do usuário
-  const userInitials = data?.user?.name ? data.user.name.split(" ").map((n) => n[0]).join("") : "";
+  const userInitials = data?.user?.name
+    ? data.user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+    : ""
 
   return (
     <SheetContent className="overflow-y-auto">
@@ -29,18 +34,18 @@ const SidebarSheet = () => {
         {data?.user ? (
           <div className="flex items-center gap-2">
             <Avatar>
-               <AvatarImage 
-               src={data?.user?.image ?? ""} 
-               alt={data.user.name ?? ""}
-               />
-               <AvatarFallback>{userInitials}</AvatarFallback>
-               </Avatar>
-          <div>
-            <p className="font-bold">{data.user.name}</p>
-            <p className="text-xs">{data.user.email}</p>
+              <AvatarImage
+                src={data?.user?.image ?? ""}
+                alt={data.user.name ?? ""}
+              />
+              <AvatarFallback>{userInitials}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-bold">{data.user.name}</p>
+              <p className="text-xs">{data.user.email}</p>
             </div>
-            </div>
-            ) : (
+          </div>
+        ) : (
           <>
             <h2 className="font-bold">Olá, faça seu login!</h2>
             <Dialog>
@@ -66,19 +71,23 @@ const SidebarSheet = () => {
             </Link>
           </Button>
         </SheetClose>
-        <Button className="justify-start gap-2" variant="ghost" asChild>
-          <Link href="/bookings">
-            <CalendarIcon size={18} />
-            Agendamentos
-          </Link>
-        </Button>
+        {data?.user && (
+          <SheetClose asChild>
+            <Button className="justify-start gap-2" variant="ghost" asChild>
+              <Link href="/bookings">
+                <CalendarIcon size={18} />
+                Agendamentos
+              </Link>
+            </Button>
+          </SheetClose>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 border-b border-solid py-5">
         {quickSearchOptions.map((option) => (
           <SheetClose key={option.title} asChild>
             <Button className="justify-start gap-2" variant="ghost" asChild>
-              <Link href={`/barbershops?service=${option.title}`}>
+              <Link href={`/units?service=${option.title}`}>
                 <Image
                   alt={option.title}
                   src={option.imageUrl}

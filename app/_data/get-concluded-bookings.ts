@@ -10,19 +10,12 @@ export const getConcludedBookings = async () => {
   return db.booking.findMany({
     where: {
       userId: (session.user as any).id,
-      date: {
-        lt: new Date(),
-      },
+      date: { lt: new Date() },
     },
     include: {
-      service: {
-        include: {
-          barbershop: true,
-        },
-      },
+      service: true,
+      unit: true,
     },
-    orderBy: {
-      date: "asc",
-    },
+    orderBy: { date: "asc" },
   })
 }

@@ -36,22 +36,17 @@ import BookingSummary from "./booking-summary"
 interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
     include: {
-      service: {
-        include: {
-          barbershop: true
-        }
-      }
+      service: true
+      unit: true
     }
   }>
 }
 
-// TODO: receber agendamento como prop
 const BookingItem = ({ booking }: BookingItemProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const {
-    service: { barbershop },
-  } = booking
+  const { service, unit } = booking
   const isConfirmed = isFuture(booking.date)
+
   const handleCancelBooking = async () => {
     try {
       await deleteBooking(booking.id)
@@ -62,15 +57,12 @@ const BookingItem = ({ booking }: BookingItemProps) => {
       toast.error("Erro ao cancelar reserva. Tente novamente.")
     }
   }
-  const handleSheetOpenChange = (isOpen: boolean) => {
-    setIsSheetOpen(isOpen)
-  }
+
   return (
-    <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
-      <SheetTrigger className="w-full min-w-[90%]">
-        <Card className="min-w-[90%]">
+    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <SheetTrigger className="w-[290px] shrink-0">
+        <Card className="w-full">
           <CardContent className="flex justify-between p-0">
-            {/* ESQUERDA */}
             <div className="flex flex-col gap-2 py-5 pl-5">
               <Badge
                 className="w-fit"
@@ -78,16 +70,14 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               >
                 {isConfirmed ? "Confirmado" : "Finalizado"}
               </Badge>
-              <h3 className="font-semibold">{booking.service.name}</h3>
-
+              <h3 className="font-semibold">{service.name}</h3>
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={booking.service.barbershop.imageUrl} />
+                  <AvatarImage src={unit.imageUrl} />
                 </Avatar>
-                <p className="text-sm">{booking.service.barbershop.name}</p>
+                <p className="text-sm">{unit.name}</p>
               </div>
             </div>
-            {/* DIREITA */}
             <div className="flex flex-col items-center justify-center border-l-2 border-solid px-5">
               <p className="text-sm capitalize">
                 {format(booking.date, "MMMM", { locale: ptBR })}
@@ -102,6 +92,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
           </CardContent>
         </Card>
       </SheetTrigger>
+
       <SheetContent className="w-[85%]">
         <SheetHeader>
           <SheetTitle className="text-left">Informações da Reserva</SheetTitle>
@@ -109,20 +100,19 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
         <div className="relative mt-6 flex h-[180px] w-full items-end">
           <Image
-            alt={`Mapa da barbearia ${booking.service.barbershop.name}`}
+            alt={`Mapa da unidade ${unit.name}`}
             src="/map.png"
             fill
             className="rounded-xl object-cover"
           />
-
           <Card className="z-50 mx-5 mb-3 w-full rounded-xl">
             <CardContent className="flex items-center gap-3 px-5 py-3">
               <Avatar>
-                <AvatarImage src={barbershop.imageUrl} />
+                <AvatarImage src={unit.imageUrl} />
               </Avatar>
               <div>
-                <h3 className="font-bold">{barbershop.name}</h3>
-                <p className="text-xs">{barbershop.address}</p>
+                <h3 className="font-bold">{unit.name}</h3>
+                <p className="text-xs">{unit.address}</p>
               </div>
             </CardContent>
           </Card>
@@ -138,18 +128,19 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
           <div className="mb-3 mt-6">
             <BookingSummary
-              barbershop={barbershop}
-              service={booking.service}
+              unit={unit}
+              service={service}
               selectedDate={booking.date}
             />
           </div>
 
           <div className="space-y-3">
-            {barbershop.phones.map((phone, index) => (
+            {unit.phones.map((phone, index) => (
               <PhoneItem key={index} phone={phone} />
             ))}
           </div>
         </div>
+
         <SheetFooter className="mt-6">
           <div className="flex items-center gap-3">
             <SheetClose asChild>

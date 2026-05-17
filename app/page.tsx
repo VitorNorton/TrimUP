@@ -2,7 +2,8 @@ import Header from "./_components/header"
 import { Button } from "./_components/ui/button"
 import Image from "next/image"
 import { db } from "./_lib/prisma"
-import BarbershopItem from "./_components/barbershop-item"
+import UnitItem from "./_components/unit-item"
+import NearbyUnits from "./_components/nearby-units"
 import { quickSearchOptions } from "./_constants/search"
 import BookingItem from "./_components/booking-item"
 import Search from "./_components/search"
@@ -12,106 +13,170 @@ import { authOptions } from "./_lib/auth"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { getConfirmedBookings } from "./_data/get-confirmed-bookings"
+import { redirect } from "next/navigation"
 
 const Home = async () => {
   const session = await getServerSession(authOptions)
-  const barbershops = await db.barbershop.findMany({})
-  const popularBarbershops = await db.barbershop.findMany({
-    orderBy: {
-      name: "desc",
-    },
-  })
+  const units = await db.unit.findMany({})
   const confirmedBookings = await getConfirmedBookings()
+
+  if (units.length === 1) redirect(`/units/${units[0].id}`)
 
   return (
     <div>
-      {/* header */}
-      <Header />
-      <div className="p-5">
-        {/* TEXTO */}
-        <h2 className="text-xl font-bold">
-          Olá, {session?.user ? session.user.name : "bem vindo"}!
-        </h2>
-        <p>
-          <span className="capitalize">
-            {format(new Date(), "EEEE, dd", { locale: ptBR })}
-          </span>
-          <span>&nbsp;de&nbsp;</span>
-          <span className="capitalize">
-            {format(new Date(), "MMMM", { locale: ptBR })}
-          </span>
-        </p>
+      <Header showSearch={false} />
 
-        {/* BUSCA */}
-        <div className="mt-6">
-          <Search />
-        </div>
+      <div className="p-5 md:px-16 md:pb-10 md:pt-6 lg:px-32">
+        {/* ── HERO DESKTOP ─────────────────────────────── */}
+        <div className="relative hidden rounded-2xl md:block">
+          <div className="absolute inset-0 overflow-hidden rounded-2xl">
+            <Image
+              src="/banner-02.png"
+              alt=""
+              fill
+              className="object-cover brightness-[0.3]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+          </div>
 
-        {/* BUSCA RÁPIDA */}
-        <div className="mt-6 flex gap-3 overflow-x-scroll [&::-webkit-scrollbar]:hidden">
-          {quickSearchOptions.map((option) => (
-            <Button
-              className="gap-2"
-              variant="secondary"
-              key={option.title}
-              asChild
-            >
-              <Link href={`/barbershops?service=${option.title}`}>
-                <Image
-                  src={option.imageUrl}
-                  width={16}
-                  height={16}
-                  alt={option.title}
-                />
-                {option.title}
-              </Link>
-            </Button>
-          ))}
-        </div>
+          <div className="relative z-10 grid grid-cols-2 items-start gap-16 p-10">
+            <div>
+              <h2 className="text-xl font-bold">
+                Olá,{" "}
+                {session?.user ? (
+                  <span className="font-bold">{session.user.name}</span>
+                ) : (
+                  <span>Faça seu login!</span>
+                )}
+              </h2>
+              <p className="text-gray-300">
+                <span className="capitalize">
+                  {format(new Date(), "EEEE, dd", { locale: ptBR })}
+                </span>
+                <span>&nbsp;de&nbsp;</span>
+                <span className="capitalize">
+                  {format(new Date(), "MMMM", { locale: ptBR })}
+                </span>
+              </p>
 
-        {/* IMAGEM */}
-        <div className="relative mt-6 h-[150px] w-full">
-          <Image
-            alt="Dê um UP no seu corte"
-            src="/banner-01.png"
-            fill
-            className="rounded-xl object-cover"
-          />
-        </div>
+              <div className="mt-6">
+                <Search />
+              </div>
 
-        {confirmedBookings.length > 0 && (
-          <>
-            <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
-              Agendamentos
-            </h2>
-
-            {/* AGENDAMENTO */}
-            <div className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-              {confirmedBookings.map((booking) => (
-                <BookingItem
-                  key={booking.id}
-                  booking={JSON.parse(JSON.stringify(booking))}
-                />
-              ))}
+              {session?.user && confirmedBookings.length > 0 && (
+                <>
+                  <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+                    Agendamentos
+                  </h2>
+                  <div className="flex gap-3 overflow-x-scroll overscroll-x-contain [&::-webkit-scrollbar]:hidden">
+                    {confirmedBookings.map((booking) => (
+                      <BookingItem
+                        key={booking.id}
+                        booking={JSON.parse(JSON.stringify(booking))}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-          </>
-        )}
 
-        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
-          Recomendados
-        </h2>
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
-          {barbershops.map((barbershop) => (
-            <BarbershopItem key={barbershop.id} barbershop={barbershop} />
-          ))}
+            <div className="min-w-0">
+              <h2 className="mb-3 text-xs font-bold uppercase text-gray-400">
+                Recomendados
+              </h2>
+              <NearbyUnits
+                units={units}
+                maxItems={4}
+                scrollClassName="flex gap-4 overflow-x-scroll overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+              />
+            </div>
+          </div>
         </div>
 
-        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+        {/* ── HERO MOBILE (design original) ────────────── */}
+        <div className="md:hidden">
+          <h2 className="text-xl font-bold">
+            Olá,{" "}
+            {session?.user ? (
+              session.user.name
+            ) : (
+              <span className="font-bold">Faça seu login!</span>
+            )}
+          </h2>
+          <p>
+            <span className="capitalize">
+              {format(new Date(), "EEEE, dd", { locale: ptBR })}
+            </span>
+            <span>&nbsp;de&nbsp;</span>
+            <span className="capitalize">
+              {format(new Date(), "MMMM", { locale: ptBR })}
+            </span>
+          </p>
+
+          <div className="mt-6">
+            <Search />
+          </div>
+
+          {/* Categorias — scroll horizontal */}
+          <div className="-mx-5 mt-6 flex gap-3 overflow-x-scroll overscroll-x-contain px-5 pb-1 [&::-webkit-scrollbar]:hidden">
+            {quickSearchOptions.map((option) => (
+              <Button
+                key={option.title}
+                variant="secondary"
+                className="shrink-0 gap-2"
+                asChild
+              >
+                <Link href={`/units?service=${option.title}`}>
+                  <Image
+                    src={option.imageUrl}
+                    width={16}
+                    height={16}
+                    alt={option.title}
+                  />
+                  {option.title}
+                </Link>
+              </Button>
+            ))}
+          </div>
+
+          <div className="relative mt-6 h-[150px] w-full">
+            <Image
+              alt="Dê um UP no seu corte"
+              src="/banner-01.png"
+              fill
+              className="rounded-xl object-cover"
+            />
+          </div>
+
+          {session?.user && confirmedBookings.length > 0 && (
+            <>
+              <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+                Agendamentos
+              </h2>
+              <div className="-mx-5 flex gap-3 overflow-x-scroll overscroll-x-contain px-5 [&::-webkit-scrollbar]:hidden">
+                {confirmedBookings.map((booking) => (
+                  <BookingItem
+                    key={booking.id}
+                    booking={JSON.parse(JSON.stringify(booking))}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+            Mais Próximas
+          </h2>
+          <NearbyUnits units={units} />
+        </div>
+
+        {/* ── POPULARES ────────────────────────── */}
+        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400 md:mt-10">
           Populares
         </h2>
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
-          {popularBarbershops.map((barbershop) => (
-            <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+        <div className="-mx-5 flex gap-4 overflow-x-scroll overscroll-x-contain px-5 md:-mx-16 md:px-16 lg:-mx-32 lg:px-32 [&::-webkit-scrollbar]:hidden">
+          {units.map((unit) => (
+            <UnitItem key={unit.id} unit={unit} />
           ))}
         </div>
       </div>
